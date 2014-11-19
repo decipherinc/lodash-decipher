@@ -1,0 +1,17 @@
+{
+    "strict": true,
+    "browser": true,
+    "bitwise": true,
+    "eqeqeq": true,
+    "indent": 2,
+    "newcap": true,
+    "nomen": false,
+    "onevar": false,
+    "passfail": false,
+    "plusplus": false,
+    "undef": true,
+    "white": true,
+    "expr": true,
+    "maxlen": 80,
+    "predef": ["_"]
+}

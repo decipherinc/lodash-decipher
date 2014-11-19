@@ -1,0 +1,24 @@
+{
+  "name": "lodash-decipher",
+  "version": "0.1.0",
+  "description": "LoDash Mixins from Decipher, Inc.",
+  "main": "lib/lodash-decipher.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/decipherinc/lodash-decipher.git"
+  },
+  "keywords": [
+    "lodash",
+    "decipher",
+    "mixins"
+  ],
+  "author": "Christopher Hiller <chiller@decipherinc.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/decipherinc/lodash-decipher/issues"
+  },
+  "homepage": "https://github.com/decipherinc/lodash-decipher",
+  "peerDependencies": {
+    "lodash": "^2.4.1"
+  }
+}
