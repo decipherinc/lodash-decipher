@@ -1,0 +1,43 @@
+{
+  "name": "lodash-decipher",
+  "main": "lodash-decipher.js",
+  "version": "0.1.0",
+  "authors": [
+    "Christopher Hiller <chiller@decipherinc.com>"
+  ],
+  "description": "LoDash Mixins from Decipher, Inc.",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "lodash",
+    "decipher",
+    "mixins",
+    "transmogrify",
+    "sift",
+    "morph",
+    "defined",
+    "undefined",
+    "squirt",
+    "empty",
+    "flatten",
+    "prototype",
+    "apply",
+    "format",
+    "sprintf"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/decipherinc/lodash-decipher",
+  "ignore": [
+    "**/.*",
+    "test",
+    "package.json",
+    "Gruntfile.js",
+    "lib"
+  ],
+  "dependencies": {
+    "lodash": "~2.4.1"
+  }
+}
