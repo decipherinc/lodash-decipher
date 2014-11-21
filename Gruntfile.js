@@ -68,6 +68,7 @@ module.exports = function (grunt) {
         commitFiles: [
           'package.json',
           'bower.json',
+          dist,
           min,
           map
         ],
