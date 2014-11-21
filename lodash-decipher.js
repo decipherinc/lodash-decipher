@@ -1,4 +1,4 @@
-/*! lodash-decipher - v0.1.0 - * https://github.com/decipherinc/lodash-decipher
+/*! lodash-decipher - v0.1.1 - * https://github.com/decipherinc/lodash-decipher
  * Copyright (c) 2014 Decipher, Inc.; Licensed MIT
  */
 (function (root, factory) {
@@ -18,7 +18,7 @@
 }(this, function () {
 
   /**
-   * @file lodash-decipher.js
+   * lodash-decipher
    * @author Christopher Hiller <chiller@decipherinc.com>
    * @copyright Copyright 2014 Decipher, Inc.
    * @license MIT
@@ -53,13 +53,6 @@
       },
 
       /**
-       * It's a no-op.
-       * @private
-       */
-      noop = function () {
-      },
-
-      /**
        * Creates a function to be used in a {@link _.map} that extends the
        * passed value with `obj`.  If `obj` is a non-object, does nothing.
        * @param {Object} [obj]
@@ -68,7 +61,7 @@
        */
       objectMapper = function objectMapper(obj) {
         if (!_.isObject(obj)) {
-          return noop;
+          return _.noop;
         }
         return function (item) {
           if (_.isObject(item)) {
@@ -88,7 +81,7 @@
        */
       keyValueMapper = function keyValueMapper(key, value) {
         if (!_.isString(key)) {
-          return noop;
+          return _.noop;
         }
         return function (item) {
           if (_.isObject(item)) {
@@ -102,6 +95,11 @@
        * @lends _
        */
       nonChainableMixins = {
+
+        /**
+         * Well, it's a no-op.
+         */
+        noop: function() {},
 
         /**
          * Given an object with a non-trivial prototype chain, return its
@@ -118,7 +116,7 @@
           }
           proto = getPrototypeOf(value);
           while (proto !== null && proto !== Object.prototype) {
-            _.extend(retval, proto);
+            this.defaults(retval, proto);
             proto = getPrototypeOf(proto);
           }
           return retval;
