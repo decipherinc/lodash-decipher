@@ -52,7 +52,6 @@
     "grunt-umd": "^2.2.1",
     "jshint-stylish": "^1.0.0",
     "load-grunt-tasks": "^1.0.0",
-    "lodash": "^2.4.1",
     "time-grunt": "^1.0.0"
   }
 }

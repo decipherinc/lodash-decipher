@@ -2,14 +2,15 @@
 
 module.exports = function (grunt) {
   var path = require('path'),
-    _ = require('lodash'),
     pkg = grunt.file.readJSON('package.json'),
     bower = grunt.file.readJSON('bower.json'),
 
-    banner = _.template('/*! <%= name %> - v<%= pkg.version %> - ' +
-    '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-    ' * Copyright (c) <%= today %> Decipher, Inc.;' +
-    ' Licensed <%= pkg.license %>\n */\n'),
+    getBanner = function getBanner(name) {
+      return '/*! ' + name + ' - v<%= pkg.version %> - ' +
+        '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
+        ' * Copyright (c) <%= grunt.template.today("yyyy") %> Decipher, Inc.;' +
+        ' Licensed <%= pkg.license %>\n */\n';
+    },
 
     modifyJsExt = function modifyJsExt(filepath, ext) {
       return path.basename(filepath, '.js') + ext;
@@ -28,7 +29,8 @@ module.exports = function (grunt) {
       map: modifyJsExt(bower.main, '.min.js.map'),
       ngMain: 'ng-' + bower.main,
       ngMin: modifyJsExt('ng-' + bower.main, '.min.js'),
-      ngMap: modifyJsExt('ng-' + bower.main, '.min.js.map')
+      ngMap: modifyJsExt('ng-' + bower.main, '.min.js.map'),
+
     },
 
     build: {
@@ -80,7 +82,10 @@ module.exports = function (grunt) {
           'package.json',
           'bower.json'
         ],
-        updateConfigs: ['pkg'],
+        updateConfigs: [
+          'pkg',
+          'bower'
+        ],
         commit: true,
         commitMessage: 'Release v%VERSION%',
         commitFiles: [
@@ -161,11 +166,7 @@ module.exports = function (grunt) {
           ]
         },
         options: {
-          banner: banner({
-            today: grunt.template.today("yyyy"),
-            name: pkg.name,
-            pkg: pkg
-          })
+          banner: getBanner(pkg.name)
         }
       },
       ng: {
@@ -176,18 +177,13 @@ module.exports = function (grunt) {
           ]
         },
         options: {
-          banner: banner({
-            today: grunt.template.today("yyyy"),
-            name: 'ng-lodash-decipher',
-            pkg: pkg
-          })
+          banner: getBanner('ng-lodash-decipher')
         }
       }
     },
 
     uglify: {
       options: {
-        banner: '<%= usebanner.options.banner %>',
         sourceMap: true
       },
       main: {
@@ -229,8 +225,6 @@ module.exports = function (grunt) {
   grunt.registerTask('test', [
     'jshint',
     'jscs'
-    //'mochacov:main',
-    //'mochacov:lcov'
   ]);
   grunt.registerTask('html-cov', ['mochacov:html-cov']);
 
@@ -244,8 +238,8 @@ module.exports = function (grunt) {
     'clean',
     'concat',
     'umd',
-    'usebanner',
-    'uglify'
+    'uglify',
+    'usebanner'
   ]);
   grunt.registerTask('default', ['test']);
 
