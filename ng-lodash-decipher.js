@@ -1,4 +1,4 @@
-/*! ng-lodash-decipher - v0.2.0 - * https://github.com/decipherinc/lodash-decipher
+/*! ng-lodash-decipher - v0.2.1 - * https://github.com/decipherinc/lodash-decipher
  * Copyright (c) 2014 Decipher, Inc.; Licensed MIT
  */
 
@@ -471,7 +471,8 @@
 
     _.mixin({
       truthy: truthy,
-      falsy: falsy
+      falsy: falsy,
+      keypath : keypath
     });
   };
   decipherLodash.$inject = ['$parse'];
