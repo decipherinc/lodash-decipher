@@ -1,4 +1,4 @@
-/*! ng-lodash-decipher - v0.1.1 - * https://github.com/decipherinc/lodash-decipher
+/*! ng-lodash-decipher - v0.2.0 - * https://github.com/decipherinc/lodash-decipher
  * Copyright (c) 2014 Decipher, Inc.; Licensed MIT
  */
 
