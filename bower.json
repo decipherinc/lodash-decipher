@@ -26,7 +26,12 @@
     "prototype",
     "apply",
     "format",
-    "sprintf"
+    "sprintf",
+    "angular",
+    "angularjs",
+    "falsy",
+    "truthy",
+    "keypath"
   ],
   "license": "MIT",
   "homepage": "https://github.com/decipherinc/lodash-decipher",

@@ -2,6 +2,7 @@
     "strict": true,
     "browser": true,
     "bitwise": true,
+    "globalstrict": true,
     "eqeqeq": true,
     "indent": 2,
     "newcap": true,
@@ -13,5 +14,5 @@
     "white": true,
     "expr": true,
     "maxlen": 80,
-    "predef": ["_"]
+    "predef": ["_", "angular"]
 }

@@ -2,21 +2,40 @@
 
 module.exports = function (grunt) {
   var path = require('path'),
+    _ = require('lodash'),
     pkg = grunt.file.readJSON('package.json'),
-    dist = path.basename(pkg.main),
-    noExt = path.basename(pkg.main, '.js'),
-    min = noExt + '.min.js',
-    umd = path.join('build', noExt + '.umd.js'),
-    map = min + '.map',
-    BANNER = '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
-        '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-        ' * Copyright (c) <%= grunt.template.today("yyyy") %> Decipher, Inc.;' +
-        ' Licensed <%= pkg.license %>\n */\n';
+    bower = grunt.file.readJSON('bower.json'),
+
+    banner = _.template('/*! <%= name %> - v<%= pkg.version %> - ' +
+    '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
+    ' * Copyright (c) <%= today %> Decipher, Inc.;' +
+    ' Licensed <%= pkg.license %>\n */\n'),
+
+    modifyJsExt = function modifyJsExt(filepath, ext) {
+      return path.basename(filepath, '.js') + ext;
+    };
 
   require('time-grunt')(grunt);
 
   grunt.initConfig({
     pkg: pkg,
+
+    bower: bower,
+
+    dist: {
+      main: bower.main,
+      min: modifyJsExt(bower.main, '.min.js'),
+      map: modifyJsExt(bower.main, '.min.js.map'),
+      ngMain: 'ng-' + bower.main,
+      ngMin: modifyJsExt('ng-' + bower.main, '.min.js'),
+      ngMap: modifyJsExt('ng-' + bower.main, '.min.js.map')
+    },
+
+    build: {
+      main: pkg.main,
+      ng: path.join('build', 'ng-' + bower.main),
+      ngSrc: path.join('lib', 'ng-' + bower.main)
+    },
 
     jshint: {
       main: [
@@ -30,7 +49,6 @@ module.exports = function (grunt) {
       }
     },
 
-    // Unit tests.
     mochacov: {
       options: {
         files: 'test/*.spec.js'
@@ -68,9 +86,12 @@ module.exports = function (grunt) {
         commitFiles: [
           'package.json',
           'bower.json',
-          dist,
-          min,
-          map
+          '<%= dist.main %>',
+          '<%= dist.min %>',
+          '<%= dist.map %>',
+          '<%= dist.ngMain %>',
+          '<%= dist.ngMin %>',
+          '<%= dist.ngMap %>'
         ],
         createTag: true,
         tagName: 'v%VERSION%',
@@ -80,37 +101,102 @@ module.exports = function (grunt) {
       }
     },
 
+    clean: ['build/**'],
+
     umd: {
+      options: {
+        indent: '  '
+      },
       main: {
         src: '<%= pkg.main %>',
-        dest: umd,
-        indent: '  ',
+        dest: '<%= dist.main %>',
         deps: {
-          amd: ['lodash'],
+          amd: ['../lib/lodash'],
           cjs: ['lodash'],
-          global: ['_']
+          global: ['_'],
+          'default': ['_']
+        }
+      },
+      angular: {
+        src: '<%= build.ng %>',
+        dest: '<%= dist.ngMain %>',
+        deps: {
+          amd: [
+            '../lib/lodash',
+            'angular'
+          ],
+          cjs: [
+            'lodash',
+            'angular-node'
+          ],
+          global: [
+            '_',
+            'angular'
+          ],
+          'default': [
+            '_',
+            'angular'
+          ]
         }
       }
     },
 
     concat: {
+      angular: {
+        src: [
+          '<%= build.main %>',
+          '<%= build.ngSrc %>'
+        ],
+        dest: '<%= build.ng %>'
+      }
+    },
+
+    usebanner: {
+      options: {},
       main: {
-        src: umd,
-        dest: dist,
+        files: {
+          src: [
+            '<%= dist.main %>',
+            '<%= dist.min %>'
+          ]
+        },
         options: {
-          banner: BANNER
+          banner: banner({
+            today: grunt.template.today("yyyy"),
+            name: pkg.name,
+            pkg: pkg
+          })
+        }
+      },
+      ng: {
+        files: {
+          src: [
+            '<%= dist.ngMain %>',
+            '<%= dist.ngMin %>'
+          ]
+        },
+        options: {
+          banner: banner({
+            today: grunt.template.today("yyyy"),
+            name: 'ng-lodash-decipher',
+            pkg: pkg
+          })
         }
       }
     },
 
     uglify: {
       options: {
-        banner: BANNER,
+        banner: '<%= usebanner.options.banner %>',
         sourceMap: true
       },
-      dist: {
-        src: dist,
-        dest: min
+      main: {
+        src: '<%= dist.main %>',
+        dest: '<%= dist.min %>'
+      },
+      ng: {
+        src: '<%= dist.ngMain %>',
+        dest: '<%= dist.ngMin %>'
       }
     },
 
@@ -125,7 +211,7 @@ module.exports = function (grunt) {
 
     jscs: {
       main: {
-        src: 'lib/**/*.js'
+        src: ['lib/**/*.js', 'Gruntfile.js']
       }
     },
 
@@ -155,8 +241,10 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('build', [
-    'umd',
+    'clean',
     'concat',
+    'umd',
+    'usebanner',
     'uglify'
   ]);
   grunt.registerTask('default', ['test']);
