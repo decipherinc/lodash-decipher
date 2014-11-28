@@ -1,0 +1,51 @@
+options:
+  banner: |
+    /*! <%= getName() %> - v<%= pkg.version %>
+     * <%= pkg.homepage %>
+     * Copyright (c) <%= grunt.template.today('yyyy') %> Decipher, Inc.; Licensed <%= pkg.license %>
+     */
+
+main:
+  files:
+    "<%= files.main() %>": <%= files.lib() %>
+  options:
+    transform:
+      -
+        - exposify
+        -
+          expose:
+            lodash: _
+
+custom:
+  files:
+    "<%= files.custom() %>": <%= files.lib() %>
+  options:
+    alias: <%= lodashAlias %>
+
+ng:
+  files:
+    "<%= files.ng() %>": <%= files.lib() %>
+  options:
+    transform:
+      -
+        - exposify
+        -
+          expose:
+            lodash: _
+      -
+        - exposify
+        -
+          expose:
+            angular-node: angular
+
+ngCustom:
+  files:
+    "<%= files.custom(files.ng()) %>": <%= files.lib() %>
+  options:
+    alias: <%= lodashAlias %>
+    transform:
+      -
+        - exposify
+        -
+          expose:
+            angular-node: angular

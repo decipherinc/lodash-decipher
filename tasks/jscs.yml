@@ -1,0 +1,6 @@
+main:
+  src:
+    - lib/**/*.js
+    - test/**/*.js
+    - tasks/**/*.js
+    - Gruntfile.js

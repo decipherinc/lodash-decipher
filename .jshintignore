@@ -1,1 +1,2 @@
-./lodash-decipher.*
+lodash-decipher*.js
+!lib

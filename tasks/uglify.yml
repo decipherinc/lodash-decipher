@@ -1,0 +1,15 @@
+options:
+  sourceMap: true
+  banner: <%= browserify.options.banner %>
+main:
+  src: <%= files.main() %>
+  dest: <%= files.min() %>
+custom:
+  src: <%= files.custom() %>
+  dest: <%= files.min(files.custom()) %>
+ng:
+  src: <%= files.ng() %>
+  dest: <%= files.min(files.ng()) %>
+ngCustom:
+  src: <%= files.custom(files.ng()) %>
+  dest: <%= files.min(files.custom(files.ng())) %>

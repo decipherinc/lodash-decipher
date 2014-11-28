@@ -1,0 +1,17 @@
+options:
+  files:
+    - lib/**/*.js
+    - test/**/*.spec.js
+main:
+  options:
+    reporter: spec
+lcov:
+  options:
+    reporter: mocha-lcov-reporter
+    quiet: true
+    instrument: true
+    output: coverage/lcov.info
+html-cov:
+  options:
+    reporter: html-cov
+    output: coverage/index.html

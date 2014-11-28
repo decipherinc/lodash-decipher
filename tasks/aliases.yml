@@ -1,0 +1,18 @@
+test:
+  - jshint
+  - jscs
+#  - mochacov:main
+build:
+  - browserify:main
+  - browserify:ng
+  - uglify:main
+  - uglify:ng
+default:
+  - build
+custom:
+  - browserify:custom
+  - uglify:custom
+ng-custom:
+  - browserify:ngCustom
+  - uglify:ngCustom
+

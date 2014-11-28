@@ -1,6 +1,6 @@
 {
   "name": "lodash-decipher",
-  "main": "lodash-decipher.js",
+  "main": "dist/lodash-decipher.js",
   "version": "0.2.2",
   "authors": [
     "Christopher Hiller <chiller@decipherinc.com>"
@@ -40,7 +40,9 @@
     "test",
     "package.json",
     "Gruntfile.js",
-    "lib"
+    "lib",
+    "tasks",
+    "index.js"
   ],
   "dependencies": {
     "lodash": "~2.4.1"

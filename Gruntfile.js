@@ -1,245 +1,135 @@
 'use strict';
 
+var path = require('path'),
+  basename = path.basename,
+  format = require('util').format,
+  _ = require('lodash'),
+  pkg = require('./package.json'),
+  bower = require('./bower.json'),
+  time = require('time-grunt'),
+  load = require('load-grunt-config'),
+  resolve = require.resolve;
+
 module.exports = function (grunt) {
-  var path = require('path'),
-    pkg = grunt.file.readJSON('package.json'),
-    bower = grunt.file.readJSON('bower.json'),
+  var ngName, ngRegExp, isAngular, mainFilepath, release, setPreExt, name, data,
+    dist;
 
-    getBanner = function getBanner(name) {
-      return '/*! ' + name + ' - v<%= pkg.version %> - ' +
-        '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-        ' * Copyright (c) <%= grunt.template.today("yyyy") %> Decipher, Inc.;' +
-        ' Licensed <%= pkg.license %>\n */\n';
-    },
+  time(grunt);
 
-    modifyJsExt = function modifyJsExt(filepath, ext) {
-      return path.basename(filepath, '.js') + ext;
-    };
+  /**
+   * Path to `dist/` directory.
+   * @type {string}
+   */
+  dist = 'dist';
 
-  require('time-grunt')(grunt);
+  /**
+   * Name of this package (for dist file banner)
+   * @type {string}
+   */
+  name = pkg.name;
 
-  grunt.initConfig({
+  /**
+   * Name of AngularJS extension (for dist file banner)
+   * @type {string}
+   */
+  ngName = format('%s %s', name, '(AngularJS extension)');
+
+  /**
+   * Targets that begin with `ng` will use `ngName`.
+   * @type {RegExp}
+   */
+  ngRegExp = /^ng/;
+
+  /**
+   * Returns `true` if parameter begins with `ng`.
+   * @param {string} target Grunt task target
+   * @returns {boolean}
+   */
+  isAngular = function (target) {
+    return ngRegExp.test(target);
+  };
+
+  /**
+   * Path to main file (for browser usage)
+   * @type {string}
+   */
+  mainFilepath = bower.main;
+
+  /**
+   * Grunt task to bump, build, then commit.
+   * @param {string} target Bump target.  One of `major`, `minor`, or `patch`
+   */
+  release = function release(target) {
+    var run = grunt.task.run;
+    run('bump-only:' + target);
+    run('build');
+    run('bump-commit');
+  };
+
+  /**
+   * Given `foo.js` and "pre-extension" `bar`, return `foo.bar.js`.
+   * @param {string} [ext=''] Extension
+   * @param {string} [filepath] Filepath.  Defaults to `main` in `bower.json`
+   * @returns {string}
+   */
+  setPreExt = function setPreExt(ext, filepath) {
+    ext = ext ? '.' + ext : '';
+    filepath = filepath || mainFilepath;
+    return path.join('dist', basename(filepath, '.js') + ext + '.js');
+  };
+
+  /**
+   * Custom data to make available to the task template engine.
+   */
+  data = {
+    /**
+     * Contents of package.json
+     * @type {Object}
+     */
     pkg: pkg,
 
-    bower: bower,
+    /**
+     * Browserify alias for LoDash build to use during custom build.
+     * @type {string}
+     */
+    customAlias: format('%s:%s', _.isString(grunt.option('lodash')) ?
+      path.resolve(__dirname, lodashOption) : resolve('lodash'), 'lodash'),
 
-    dist: {
-      main: bower.main,
-      min: modifyJsExt(bower.main, '.min.js'),
-      map: modifyJsExt(bower.main, '.min.js.map'),
-      ngMain: 'ng-' + bower.main,
-      ngMin: modifyJsExt('ng-' + bower.main, '.min.js'),
-      ngMap: modifyJsExt('ng-' + bower.main, '.min.js.map')
+    /**
+     * Gets the name of the current dist file being created.  Used in banner.
+     * @returns {string}
+     */
+    getName: function getName() {
+      return isAngular(this.target) ? ngName : name;
     },
 
-    build: {
-      main: pkg.main,
-      ng: path.join('build', 'ng-' + bower.main),
-      ngSrc: path.join('lib', 'ng-' + bower.main)
-    },
-
-    jshint: {
-      main: [
-        'Gruntfile.js',
-        '<%= pkg.main %>',
-        '<%= mochacov.options.files %>'
-      ],
-      options: {
-        jshintrc: true,
-        reporter: require('jshint-stylish')
-      }
-    },
-
-    mochacov: {
-      options: {
-        files: 'test/*.spec.js'
-      },
-      main: {
-        options: {
-          reporter: 'spec'
-        }
-      },
-      lcov: {
-        options: {
-          reporter: 'mocha-lcov-reporter',
-          quiet: true,
-          instrument: true,
-          output: 'coverage/lcov.info'
-        }
-      },
-      'html-cov': {
-        options: {
-          reporter: 'html-cov',
-          output: 'coverage/index.html'
-        }
-      }
-    },
-
-    bump: {
-      options: {
-        files: [
-          'package.json',
-          'bower.json'
-        ],
-        updateConfigs: [
-          'pkg',
-          'bower'
-        ],
-        commit: true,
-        commitMessage: 'Release v%VERSION%',
-        commitFiles: [
-          'package.json',
-          'bower.json',
-          '<%= dist.main %>',
-          '<%= dist.min %>',
-          '<%= dist.map %>',
-          '<%= dist.ngMain %>',
-          '<%= dist.ngMin %>',
-          '<%= dist.ngMap %>'
-        ],
-        createTag: true,
-        tagName: 'v%VERSION%',
-        tagMessage: 'Version %VERSION%',
-        push: false,
-        gitDescribeOptions: '--tags --always --abbrev=1 --dirty=-d'
-      }
-    },
-
-    clean: ['build/**'],
-
-    umd: {
-      options: {
-        indent: '  '
-      },
-      main: {
-        src: '<%= pkg.main %>',
-        dest: '<%= dist.main %>',
-        deps: {
-          amd: ['../lib/lodash'],
-          cjs: ['lodash'],
-          global: ['_'],
-          'default': ['_']
-        }
-      },
-      angular: {
-        src: '<%= build.ng %>',
-        dest: '<%= dist.ngMain %>',
-        deps: {
-          amd: [
-            '../lib/lodash',
-            'angular'
-          ],
-          cjs: [
-            'lodash',
-            'angular-node'
-          ],
-          global: [
-            '_',
-            'angular'
-          ],
-          'default': [
-            '_',
-            'angular'
-          ]
-        }
-      }
-    },
-
-    concat: {
-      angular: {
-        src: [
-          '<%= build.main %>',
-          '<%= build.ngSrc %>'
-        ],
-        dest: '<%= build.ng %>'
-      }
-    },
-
-    usebanner: {
-      options: {},
-      main: {
-        files: {
-          src: [
-            '<%= dist.main %>',
-            '<%= dist.min %>'
-          ]
-        },
-        options: {
-          banner: getBanner(pkg.name)
-        }
-      },
-      ng: {
-        files: {
-          src: [
-            '<%= dist.ngMain %>',
-            '<%= dist.ngMin %>'
-          ]
-        },
-        options: {
-          banner: getBanner('ng-lodash-decipher')
-        }
-      }
-    },
-
-    uglify: {
-      options: {
-        sourceMap: true
-      },
-      main: {
-        src: '<%= dist.main %>',
-        dest: '<%= dist.min %>'
-      },
-      ng: {
-        src: '<%= dist.ngMain %>',
-        dest: '<%= dist.ngMin %>'
-      }
-    },
-
-    devUpdate: {
-      main: {
-        options: {
-          updateType: 'prompt',
-          semver: false
-        }
-      }
-    },
-
-    jscs: {
-      main: {
-        src: ['lib/**/*.js', 'Gruntfile.js']
-      }
-    },
-
-    jsdox: {
-      main: {
-        src: 'lib/**',
-        dest: __dirname
+    /**
+     * Stuff related to filepaths for builds
+     */
+    files: {
+      /**
+       * Gets the filepath to the appropriate lib/ file for the task target.
+       * @returns {string}
+       */
+      lib: function lib() {
+        return isAngular(grunt.task.current.target) ?
+          resolve('./lib/lodash-decipher.ng') :
+          resolve('./lib/lodash-decipher');
       }
     }
+  };
 
+  // create accessor functions to get at filenames
+  _.each(['', 'min', 'custom', 'ng'], function (ext) {
+    data.files[ext || 'main'] = _.partial(setPreExt, ext);
+  })
+
+  load(grunt, {
+    configPath: path.join(__dirname, 'tasks'),
+    jitGrunt: true,
+    data: data
   });
 
-  require('load-grunt-tasks')(grunt);
-
-  grunt.registerTask('test', [
-    'jshint',
-    'jscs'
-  ]);
-  grunt.registerTask('html-cov', ['mochacov:html-cov']);
-
-  grunt.registerTask('release', function (target) {
-    grunt.task.run('bump-only:' + target);
-    grunt.task.run('build');
-    grunt.task.run('bump-commit');
-  });
-
-  grunt.registerTask('build', [
-    'clean',
-    'concat',
-    'umd',
-    'uglify',
-    'usebanner'
-  ]);
-  grunt.registerTask('default', ['test']);
+  grunt.registerTask('release', 'Bump, build, then commit', release);
 
 };

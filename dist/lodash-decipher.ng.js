@@ -1,3 +1,9 @@
+/*! lodash-decipher - v0.2.2
+ * https://github.com/decipherinc/lodash-decipher
+ * Copyright (c) 2014 Decipher, Inc.; Licensed MIT
+ */
+
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * lodash-decipher
  * @author Christopher Hiller <chiller@decipherinc.com>
@@ -8,7 +14,7 @@
 
 'use strict';
 
-var _ = require('lodash');
+var _ = (window._);
 
 /**
  * A LoDash "collection"
@@ -366,3 +372,105 @@ _.mixin(_, nonChainableMixins, {
 _.mixin(_, chainableMixins);
 
 module.exports = _;
+
+},{}],2:[function(require,module,exports){
+/**
+ * ng-lodash-decipher: lodash-decipher + AngularJS goodies
+ * @author Christopher Hiller <chiller@decipherinc.com>
+ * @copyright Copyright 2014 Decipher, Inc.
+ * @license MIT
+ * @overview Provides a smattering of mixins for [LoDash](http://lodash.com).
+ */
+
+'use strict';
+
+var _ = require('./lodash-decipher'),
+  angular = (window.angular),
+
+  decipherLodash = function ($parse) {
+
+    /**
+     * Evaluates truthiness of context of AngularJS expression
+     *   in a context object.  If `exp` is omitted, returns the result of
+     *   casting `ctx` to a boolean.
+     * @param {Object} [ctx] Context in which to evaluate `exp`
+     * @param {string} [exp] AngularJS expression
+     * @returns {boolean}
+     * @example
+     * var foo = {bar: {baz: {quux: true}}};
+     * (foo.bar && foo.bar.baz && foo.bar.baz.quux) // true
+     * _.truthy(foo, 'bar.baz.quux') // true
+     */
+    var truthy = function truthy(ctx, exp) {
+        return this.isString(exp) ?
+        this.isObject(ctx) && !!$parse(exp)(ctx) : !!ctx;
+      },
+
+      /**
+       * @description Evaluates falsiness of context of AngularJS expression in
+       *   a context object.  If `exp` is omitted, returns the result of
+       *   casting `ctx` to a boolean.
+       * @param {Object} [ctx] Context in which to evaluate `exp`
+       * @param {string} [exp] AngularJS expression
+       * @this _
+       * @returns {boolean}
+       */
+      falsy = function falsy(ctx, exp) {
+        return !this.truthy(ctx, exp);
+      },
+
+      /**
+       * Using dot-notation, get or set a value within an object-like `ctx`.
+       * @param {(Object|Function|Array|string)} [ctx={}] If an object-like
+       *   value, get or set the value of path `exp` against it.  If a string,
+       *   assign the `value` to the path `exp` within a new object.
+       * @param {(*|string)} exp If a string, then an AngularJS expression path
+       * to be evaluated within `ctx`.  Otherwise, assumed to be the `value` in
+       * "setter" mode.
+       * @param {*} [value] If present, sets the value of path `exp`.
+       * @todo split into two functions?
+       * @throws If AngularJS expression not parseable by `$parse`
+       * @throws If `value` present and keypath is not assignable by `$parse`
+       * @returns {(*|undefined)} The value of the expression `exp` if in
+       *   "getter" mode if `exp` is a string; otherwise `ctx`.
+       * @example
+       * var foo = {bar: baz: {quux: true}};
+       * keypath(foo, 'bar.baz.quux'); // true
+       * keypath(foo, 'bar.baz.spam', false); // foo
+       * foo.bar.baz.spam; // false
+       * keypath('herp', 'derp') // {herp: 'derp'}
+       */
+      keypath = function keypath(ctx, exp, value) {
+        var compiled;
+        if (this.isString(ctx)) {
+          value = exp;
+          exp = ctx;
+          ctx = {};
+        }
+        if (this.isUndefined(exp)) {
+          return ctx;
+        }
+        if (this.isObject(ctx)) {
+          compiled = $parse(exp);
+          if (this.isDefined(value)) {
+            compiled.assign(ctx, value);
+            return ctx;
+          }
+          return compiled(ctx);
+        }
+      };
+
+    _.mixin({
+      truthy: truthy,
+      falsy: falsy,
+      keypath: keypath
+    }, {
+      chain: false
+    });
+  };
+decipherLodash.$inject = ['$parse'];
+
+angular.module('decipher.lodash', [])
+  .run(decipherLodash);
+
+},{"./lodash-decipher":1}]},{},[2]);

@@ -15,13 +15,91 @@ or
 $ npm install lodash-decipher
 ```
 
-Then, add a `<script>` tag, or `require('lodash-decipher')` or whatever is applicable.
+## Usage
 
-**lodash-decipher** is a [UMD](https://github.com/umdjs/umd) module.
+### AngularJS Goodies
 
-* * *
+This module distributes a separate set of file(s) that will mixin [several more functions](#angularjs-api) to LoDash that rely on AngularJS' API.
+  
+Is that a good idea?  I don't know.  Anyway...
 
-## API
+If you want access to these functions, simply require `decipher.lodash` from your main module, and it will mix itself into LoDash's `_` object.
+
+> **Note**: These functions are *not* available during AngularJS' configuration phase, as they rely on services instead of providers.
+
+In general, this will give you the extra functions:
+
+```js
+angular.module('myModule', ['decipher.lodash']);
+```
+
+Read on for specifics.
+
+### NodeJS
+
+```js
+var _ = require('lodash-decipher');
+
+_.morph([1, 2, 3], function(value) {
+  return value + 1;
+}); // [2, 3, 4]
+```
+
+**lodash-decipher** has a peer dependency upon LoDash, so if you install it, you get LoDash too.  It exports the same object as returned by `require('lodash')`.
+
+### NodeJS + AngularJS
+
+If you have [angular-node](https://www.npmjs.org/package/angular-node) installed, the AngularJS `Module` (`decipher.lodash`) will automatically be registered when this module is required.  Example:
+
+```js
+var angular = require('angular-node'),
+  _ = require('lodash-decipher');
+  
+angular.module('myModule', ['decipher.lodash'])
+  .run(function() {
+    var foo = {bar: {baz: {quux: true}}};
+    _.keypath(bar, 'baz.quux', false);
+    bar.baz.quux === false; // true
+  });
+```
+
+### Browser
+
+```html
+<script src="/path/to/lodash.js"></script>
+<script src="/path/to/lodash-decipher.js"></script>
+```
+
+For production usage:
+
+```html
+<script src="/path/to/lodash.min.js"></script>
+<script src="/path/to/lodash-decipher.min.js"></script>
+```
+
+LoDash *must* be loaded before **lodash-decipher**.
+
+### Browser + AngularJS
+
+If you're using [AngularJS](http://angularjs.org), you may wish to use the `lodash-decipher.ng*.js` files instead.
+
+```html
+<script src="/path/to/lodash.js"></script>
+<script src="/path/to/angular.js"></script>
+<script src="/path/to/lodash-decipher.ng.js"></script>
+```
+
+For production usage:
+
+```html
+<script src="/path/to/lodash.min.js"></script>
+<script src="/path/to/angular.min.js"></script>
+<script src="/path/to/lodash-decipher.ng.min.js"></script>
+```
+
+> **Note**: `lodash-decipher.js` proper is included within `lodash-decipher.ng.js`.
+
+## Core API
 
 ### Chainable Methods
 
@@ -138,8 +216,6 @@ Given an object with a non-trivial prototype chain, return its flattened prototy
 
 **Returns**: `Object`, A flattened prototype
 
-* * * 
-
 ### Non-Chainable Methods
 
 #### _.applicator([func], [args], [ctx]) 
@@ -207,17 +283,21 @@ setTimeout(function() {
 }, 1000);
 ```
 
-* * *
+## AngularJS API
 
-## AngularJS Extras
+The following are only available if you are using AngularJS and have followed the "usage" directions:
 
-**lodash-decipher** includes file `ng-lodash-decipher.js`/`ng-lodash-decipher.min.js` for more goodies, if you happen to be using AngularJS.  If you are, consider using this *instead of* `lodash-decipher.js`/`lodash-decipher.min.js` (not *in addition to*, because it contains all of `lodash-decipher.js`).
- 
 ### Non-Chainable Methods
 
 #### _.truthy([ctx], [exp]) 
 
-Evaluates [AngularJS expression](https://docs.angularjs.org/guide/expression) `exp` in context of "object" `ctx` for truthiness.
+Evaluates [AngularJS expression](https://docs.angularjs.org/guide/expression) `exp` in context of "object" `ctx` for truthiness.  The purpose of this is to avoid code like:
+
+```js
+if (foo && foo.bar && foo.bar.baz && foo.bar.baz.quux) {
+  // ...
+}
+```
 
 *"Object" means one of: `Array`, `Function`, `Object`, `RegEx`, `new Number(0)`, and `new String('')`.*
 
@@ -233,13 +313,18 @@ Evaluates [AngularJS expression](https://docs.angularjs.org/guide/expression) `e
 
 ```js
 var foo = {bar: {baz: {quux: true}}};
-(foo.bar && foo.bar.baz && foo.bar.baz.quux) // true
 _.truthy(foo, 'bar.baz.quux') // true
 ```
 
 #### _.falsy([ctx], [exp]) 
 
-Evaluates [AngularJS expression](https://docs.angularjs.org/guide/expression) `exp` in context of "object" `ctx` for falsiness.
+Evaluates [AngularJS expression](https://docs.angularjs.org/guide/expression) `exp` in context of "object" `ctx` for falsiness.  The purpose of this is to avoid code like:
+
+```js
+if (foo && foo.bar && foo.bar.baz && foo.bar.baz.quux) {
+  // ...
+}
+```
 
 *"Object" means one of: `Array`, `Function`, `Object`, `RegEx`, `new Number(0)`, and `new String('')`.*
 
@@ -255,7 +340,6 @@ Evaluates [AngularJS expression](https://docs.angularjs.org/guide/expression) `e
 
 ```js
 var foo = {bar: {baz: {quux: false}}};
-(foo.bar && foo.bar.baz && !foo.bar.baz.quux) // true
 _.falsy(foo, 'bar.baz.quux') // true
 ```
 
@@ -283,11 +367,56 @@ Using dot-notation, get or set a value within an object `ctx`.  Can also be used
 
 ```js
 var foo = {bar: baz: {quux: true}};
-keypath(foo, 'bar.baz.quux'); // true
-keypath(foo, 'bar.baz.spam', false); // foo
+// get a value
+_.keypath(foo, 'bar.baz.quux'); // true
+
+// set a value
+_.keypath(foo, 'bar.baz.spam', false); // foo
 foo.bar.baz.spam; // false
-keypath('herp', 'derp') // {herp: 'derp'}
+
+// create an object dynamically
+_.keypath('herp', 'derp') // {herp: 'derp'}
+_.zipObject(['herp'], ['derp']) // equivalent
 ```     
+
+## Developing
+
+Clone this module, then execute `npm install` within it.
+
+### Building
+
+To build, execute:
+
+```shell
+$ npm run-script build
+```
+
+The created files are placed in the `dist/` directory.
+
+### Custom Builds
+
+If you have a custom build of LoDash, you can create a build against it; assuming everything *this* module uses from LoDash is in your build.
+
+Clone this repo, `cd` into it, then:
+
+```shell
+$ npm install
+$ ./node_modules/.bin/grunt custom --lodash /path/to/custom/lodash.js
+```
+
+> You can just use `grunt` if you have installed `grunt-cli` globally.
+
+This will create `lodash-decipher.custom.js`, `lodash-decipher.custom.min.js`, and `lodash-decipher.custom.min.js.map` in the `dist/` directory.  These files are not under version control.  
+
+The Grunt task `custom-ng` will create a custom build in the same manner, with the AngularJS extensions included.
+
+### Tests
+
+```shell
+$ npm test
+```
+
+If there were any tests, they'd be executed.  TODO: Get on that.
 
 ## Maintainer
 
@@ -295,4 +424,4 @@ keypath('herp', 'derp') // {herp: 'derp'}
 
 ## License
 
-MIT
+Copyright (c) 2014 Decipher, Inc.; Licensed MIT

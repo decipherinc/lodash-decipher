@@ -1,4 +1,5 @@
 **/.*
-bower.json
-Gruntfile.js
-./lodash-decipher*
+./bower.json
+./Gruntfile.js
+./dist/
+./tasks/
