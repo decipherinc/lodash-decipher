@@ -29,8 +29,7 @@ module.exports = function (grunt) {
       map: modifyJsExt(bower.main, '.min.js.map'),
       ngMain: 'ng-' + bower.main,
       ngMin: modifyJsExt('ng-' + bower.main, '.min.js'),
-      ngMap: modifyJsExt('ng-' + bower.main, '.min.js.map'),
-
+      ngMap: modifyJsExt('ng-' + bower.main, '.min.js.map')
     },
 
     build: {
