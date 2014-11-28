@@ -1,4 +1,4 @@
-/*! ng-lodash-decipher - v0.2.1 - * https://github.com/decipherinc/lodash-decipher
+/*! ng-lodash-decipher - v0.2.2 - * https://github.com/decipherinc/lodash-decipher
  * Copyright (c) 2014 Decipher, Inc.; Licensed MIT
  */
 
@@ -381,10 +381,10 @@
 
     };
 
-  _.mixin(nonChainableMixins);
-  _.mixin(_, chainableMixins, {
-    chain: true
+  _.mixin(_, nonChainableMixins, {
+    chain: false
   });
+  _.mixin(_, chainableMixins);
 
   /**
    * ng-lodash-decipher: lodash-decipher + AngularJS goodies
@@ -472,7 +472,7 @@
     _.mixin({
       truthy: truthy,
       falsy: falsy,
-      keypath : keypath
+      keypath: keypath
     });
   };
   decipherLodash.$inject = ['$parse'];

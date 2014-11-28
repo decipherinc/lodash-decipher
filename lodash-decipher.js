@@ -1,4 +1,4 @@
-/*! lodash-decipher - v0.2.1 - * https://github.com/decipherinc/lodash-decipher
+/*! lodash-decipher - v0.2.2 - * https://github.com/decipherinc/lodash-decipher
  * Copyright (c) 2014 Decipher, Inc.; Licensed MIT
  */
 
@@ -378,10 +378,10 @@
 
     };
 
-  _.mixin(nonChainableMixins);
-  _.mixin(_, chainableMixins, {
-    chain: true
+  _.mixin(_, nonChainableMixins, {
+    chain: false
   });
+  _.mixin(_, chainableMixins);
 
 
 }));

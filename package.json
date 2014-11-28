@@ -1,6 +1,6 @@
 {
   "name": "lodash-decipher",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "LoDash Mixins from Decipher, Inc.",
   "main": "lib/lodash-decipher.js",
   "repository": {
