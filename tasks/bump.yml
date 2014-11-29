@@ -9,12 +9,7 @@ options:
   commitFiles:
     - package.json
     - bower.json
-    - <%= files.main %>
-    - <%= files.min %>
-    - <%= files.min %>.map
-    - <%= files.full %>
-    - <%= files.fullMin %>
-    - <%= files.fullMin %>.map
+    - ./dist/*
   createTag: true
   tagName: v%VERSION%
   tagMessage: Version %VERSION%

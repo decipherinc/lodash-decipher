@@ -60,10 +60,8 @@ module.exports = function (grunt) {
    * @param {string} target Bump target.  One of `major`, `minor`, or `patch`
    */
   release = function release(target) {
-    var run = grunt.task.run;
-    run('bump-only:' + target);
-    run('build');
-    run('bump-commit');
+    var run = grunt.task.run.bind(grunt.task);
+    run('bump-only:' + target) && run('build') && run('bump-commit');
   };
 
   /**
@@ -124,12 +122,18 @@ module.exports = function (grunt) {
     data.files[ext || 'main'] = _.partial(setPreExt, ext);
   })
 
+  grunt.task.registerTask('release', 'Bump, build, then commit', release);
+
   load(grunt, {
     configPath: path.join(__dirname, 'tasks'),
-    jitGrunt: true,
+    jitGrunt: {
+      staticMappings: {
+        'bump-only': 'grunt-bump',
+        'bump-commit': 'grunt-bump'
+      }
+    },
     data: data
   });
 
-  grunt.registerTask('release', 'Bump, build, then commit', release);
 
 };
