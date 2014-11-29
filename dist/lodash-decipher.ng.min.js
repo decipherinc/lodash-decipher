@@ -1,4 +1,4 @@
-/*! lodash-decipher - v0.2.2
+/*! lodash-decipher - v0.3.0
  * https://github.com/decipherinc/lodash-decipher
  * Copyright (c) 2014 Decipher, Inc.; Licensed MIT
  */
