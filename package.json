@@ -63,5 +63,5 @@
     "test": "grunt test",
     "build": "grunt build"
   },
-  "main": "lib/lodash-decipher.js"
+  "main": "index.js"
 }
