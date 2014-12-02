@@ -362,6 +362,28 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
         }
       }
       return value;
+    },
+
+    /**
+     * Returns `true` if `value` is an object with its own function named
+     * `fnName`.
+     * @param {Object} [value] Can be anything, but to return `true` must be an
+     * object (`_.isObject()` would return `true`)
+     * @param {string} [fnName] Name of function.  If omitted, returns `false`.
+     */
+    hasFunction: function hasFunction(value, fnName) {
+      return this.containsFunction(value, fnName) && this.has(value, fnName);
+    },
+
+    /**
+     * Returns `true` if `value` is an object containing function named
+     * `fnName`. Will walk prototype tree.
+     * @param {Object} [value] Can be anything, but to return `true` must be an
+     * object (`_.isObject()` would return `true`)
+     * @param {string} [fnName] Name of function.  If omitted, returns `false`.
+     */
+    containsFunction: function containsFunction(value, fnName) {
+      return this.isObject(value) && this.isFunction(value[fnName]);
     }
 
   };
