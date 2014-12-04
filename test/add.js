@@ -38,10 +38,11 @@ describe('add()', function () {
     expect(_.add(Infinity, 1, 2, 3)).to.equal(Infinity);
   });
 
-  it('should work as an "or" operator if given a boolean...I guess', function () {
-    expect(_.add(true, false)).to.equal(true);
-    expect(_.add(true, true)).to.equal(true);
-    expect(_.add(false, 1)).to.equal(true);
-    expect(_.add(false, 0)).to.equal(false);
-  });
+  it('should work as an "or" operator if given a boolean...I guess',
+    function () {
+      expect(_.add(true, false)).to.equal(true);
+      expect(_.add(true, true)).to.equal(true);
+      expect(_.add(false, 1)).to.equal(true);
+      expect(_.add(false, 0)).to.equal(false);
+    });
 });
