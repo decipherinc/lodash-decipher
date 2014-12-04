@@ -1,7 +1,7 @@
 test:
   - jshint
   - jscs
-#  - mochacov:main
+  - mochacov:main
 build:
   - browserify:main
   - browserify:ng

@@ -128,6 +128,7 @@ module.exports = function (grunt) {
     configPath: path.join(__dirname, 'tasks'),
     jitGrunt: {
       staticMappings: {
+        'mochacov': 'grunt-mocha-cov',
         'bump-only': 'grunt-bump',
         'bump-commit': 'grunt-bump'
       }

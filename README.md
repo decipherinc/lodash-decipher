@@ -187,7 +187,7 @@ var baz = [{}, {}, {}];
 _.squirt(foo, 'bar', true) // [{bar: true}, {bar: true}, {bar: true}]
 ```
 
-### _.empty([value]) 
+#### _.empty([value]) 
 
 Empties a value of its enumerable contents.
 
@@ -206,6 +206,40 @@ var bar = [1, 2, 3];
 _.empty(bar); // []
 ```
 
+#### _.add([target], [...value])
+
+General-purpose "add this to that" function; skips falsy values.  Behavior:
+
+- If given a `target` `Array`, return a new Array concatenating only truthy values.
+- If given a `target` `Object`, return a new Object with Array-like keys; the `target` will be key `0`, and each truthy value will increment from there.  You can take this value and `_.extend` it back into an Array easily.
+- If given a `target` `string`, return a new String with the truthy values concatenated to it.  Each value will be coerced to string via its `toString()` method.
+- If given a `target` `boolean`, return `true` if any values are `true`; otherwise return the value of `target`.  Each value will be coerced to boolean. 
+- If given a `target` `number`, return the number added to the sum of the values.  Skips values not parseable to a number.
+- If given a `target` `NaN`, return the `target`.
+- If given a `target` `Function`, return a function which calls `_.add()`, with the first parameter being the value returned by `target`, and each `value` as the remaining parameters.
+
+**Parameters**
+
+**[target]**: `T`, Value to "add" something to.  
+
+**[...value]**: `*`, One or more things to "add" to the `target`.
+
+**Returns**: `T`, the same type as `target`.
+
+**Example**:
+
+```js
+_.add([1, 2, 3], null, 4); // [1, 2, 3, 4]
+_.add('foo', 0, 'bar'); // 'foobar'
+_.add({herp: 'derp'}, false, 'bar') // {0: {herp: 'derp'}, 1: 'bar'}
+_.add(1, 2, 0, 'cows', 3); // 6
+_.add(Infinity, 1); // Infinity
+_.add(true, false, true) // true
+_.add(function(n) { return 1 + n; }, 3)(2); // 6
+```
+
+### Non-Chainable Methods
+
 #### _.flattenPrototype(value) 
 
 Given an object with a non-trivial prototype chain, return its flattened prototype.
@@ -216,7 +250,29 @@ Given an object with a non-trivial prototype chain, return its flattened prototy
 
 **Returns**: `Object`, A flattened prototype
 
-### Non-Chainable Methods
+#### _.hasFunction([value], [fnName])
+
+Returns `true` if `value` is an object with its own function named `fnName`.
+
+**Parameters**
+
+**[value]**: `Object`, Some object-like thing.
+
+**[fnName]**: `String`, Name of Function to look for.
+
+**Returns**: `boolean`
+
+#### _.containsFunction([value], [fnName])
+
+Returns `true` if `value` is an object with any function named `fnName`.  Walks the prototype chain.
+
+**Parameters**
+
+**[value]**: `Object`, Some object-like thing.
+
+**[fnName]**: `String`, Name of Function to look for.
+
+**Returns**: `boolean`
 
 #### _.applicator([func], [args], [ctx]) 
 
