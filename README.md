@@ -435,6 +435,68 @@ _.keypath('herp', 'derp') // {herp: 'derp'}
 _.zipObject(['herp'], ['derp']) // equivalent
 ```     
 
+#### _.isScope([value]) 
+
+Returns `true` if `value` is a [Scope](https://docs.angularjs.org/api/ng/type/$rootScope.Scope).
+
+**Parameters**
+
+**[value]**: `*`, Value to check.  
+
+**Returns**: `boolean`
+
+#### _.angularize([scope], [expr], [ctx], [args]) 
+
+Returns a Function which evaluates an expression or executes a Function within an AngularJS context.
+
+If any parameters are incorrect, [no-op](#_noop) will be returned.
+
+**Parameters**
+
+**[scope]**: `Scope | Function | string`, If a Scope object, then `$apply()` will be called with this Scope.  Otherwise, `$apply()` will be called against `$rootScope()`.  *Note*:  if `expr` is a Function, a Scope is unneccessary, because the Scope has no bearing on what the Function does.
+
+**[expr]**: `string | Function`, If a string, expected to be a valid AngularJS expression.  If a Function, then this Function will be passed to `$rootScope.$apply()`. 
+
+**[ctx]**: `Object`, Context to run `expr` in, if `expr` is a Function.
+
+**[args]**: `Array`, Args to pass to `expr`, if `expr` is a Function.
+
+**Returns**: `Function`
+
+#### _.handle([element], [eventName], [callback], [scope])
+
+Convenience function to bind an event to an element, and wrap the callback in an AngularJS context.  If any params are omitted, `element` is returned.  If `scope` is passed, automatically unbinds upon `$destroy` event.
+
+**Parameters**
+
+**[element]**: `angular.element | T`, AngularJS Element object.  If not, then `element` is returned.
+
+**[eventName]**: `String`, Name of event to bind to.  If not, then `element` is returned.
+
+**[callback]**: `Function`, Callback to execute.  If not, then `element` is returned.
+
+**[scope]**: `Scope`, If present (and a Scope), then will use to unbind the handler when the Scope is destroyed.
+
+**Returns**: `T`, Parameter `element`
+
+**Example**:
+
+```js
+element.on('click', function() {
+  scope.foo = 'bar';
+  scope.$apply();
+});
+scope.$on('$destroy', function() {
+  element.off('click');
+});
+
+// is equivalent to:
+
+_.handle(element, 'click', function() {
+  scope.foo = 'bar';
+}, scope);
+```
+
 ## Developing
 
 Clone this module, then execute `npm install` within it.
