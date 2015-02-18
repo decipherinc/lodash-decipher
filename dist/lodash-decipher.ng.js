@@ -1,4 +1,4 @@
-/*! lodash-decipher - v0.3.4-1
+/*! lodash-decipher - v0.3.4-2
  * https://github.com/decipherinc/lodash-decipher
  * Copyright (c) 2015 Decipher, Inc.; Licensed MIT
  */
@@ -32,14 +32,15 @@ var _ = (window._);
  * @private
  * @this _
  */
-var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
+var _iterableApplicator = function _iterableApplicator(value, arrayFn, objFn,
     args) {
-    if (this.isObject(value) && !this.isFunction(value)) {
-      value = this[this.isArray(value) ? arrayFn : objFn].apply(this,
-        args);
+    if (_.isObject(value) && !_.isFunction(value)) {
+      value = _[_.isArray(value) ? arrayFn : objFn].apply(_, args);
     }
     return value;
   },
+
+  iterableApplicator = _.bind(_iterableApplicator, _),
 
   /**
    * Creates a function to be used in a {@link _.map} that extends the
@@ -98,15 +99,16 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {Object} A flattended prototype
      */
     flattenPrototype: function flattenPrototype(value) {
-      var proto,
+      var _ = this || _,
+        proto,
         retval = {},
         getPrototypeOf = Object.getPrototypeOf;
-      if (!this.isObject(value)) {
+      if (!_.isObject(value)) {
         return value;
       }
       proto = getPrototypeOf(value);
       while (proto !== null && proto !== Object.prototype) {
-        this.defaults(retval, proto);
+        _.defaults(retval, proto);
         proto = getPrototypeOf(proto);
       }
       return retval;
@@ -125,8 +127,8 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {Function}
      */
     applicator: function applicator(func, args, ctx) {
-      var _ = this;
-      if (this.isString(func)) {
+      var _ = this || _;
+      if (_.isString(func)) {
         return function apply(value) {
           return _.isObject(value) && _.isFunction(value[func]) ?
             value[func].apply(ctx || value, args || []) :
@@ -143,7 +145,7 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {boolean}
      */
     isDefined: function isDefined(value) {
-      return !this.isUndefined(value);
+      return !(this || _).isUndefined(value);
     },
 
     /**
@@ -159,9 +161,10 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {string}
      */
     format: function format(value, params) {
-      var formatterRx,
+      var _ = this || _,
+        formatterRx,
         replacers;
-      if (this.isString(value)) {
+      if (_.isString(value)) {
         formatterRx = /(%[sdfj])/;
         replacers = {
           '%s': function stringReplacer(value) {
@@ -177,26 +180,69 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
             return parseFloat(value);
           }
         };
-        this(arguments)
+        _(arguments)
           .toArray()
           .slice(1)
           .each(function (param) {
-            var match = value.match(formatterRx),
+            var match,
               replacer;
-            if (match) {
-              replacer = replacers[match[1]];
-              if (this.isFunction(replacer)) {
+            if ((match = value.match(formatterRx))) {
+              if (_.isFunction((replacer = replacers[match[1]]))) {
                 try {
-                  value =
-                    value.replace(formatterRx,
-                      replacer(param));
+                  value = value.replace(formatterRx, replacer(param));
                 } catch (ignored) {
                 }
               }
             }
-          }, this);
+          }, _);
       }
       return value;
+    },
+
+    /**
+     * Like {@link format format} but returns an `Error` instead of a `string`.
+     * @param {string} message Error message
+     * @param {...string} [params] Any parameters to the message
+     * @returns {Error}
+     */
+    exception: function exception(message, params) {
+      var _ = this || _;
+      return new Error(_.format.apply(_, arguments));
+    },
+
+    /**
+     * Returns `true` if `value` is an object with its own function named
+     * `fnName`.
+     * @param {Object} [value] Can be anything, but to return `true` must be an
+     * object (`_.isObject()` would return `true`)
+     * @param {string} [fnName] Name of function.  If omitted, returns `false`.
+     * @returns boolean
+     */
+    hasFunction: function hasFunction(value, fnName) {
+      var _ = this || _;
+      return _.containsFunction(value, fnName) && _.has(value, fnName);
+    },
+
+    /**
+     * Returns `true` if `value` is an object containing function named
+     * `fnName`. Will walk prototype tree.
+     * @param {Object} [value] Can be anything, but to return `true` must be an
+     * object (`_.isObject()` would return `true`)
+     * @param {string} [fnName] Name of function.  If omitted, returns `false`.
+     * @returns boolean
+     */
+    containsFunction: function containsFunction(value, fnName) {
+      var _ = this || _;
+      return _.isObject(value) && _.isFunction(value[fnName]);
+    },
+
+    /**
+     * Returns `true` if the object has only one member.
+     * @param {*} [value] Value to inspect
+     * @returns boolean
+     */
+    isSingular: function isSingular(value) {
+      return (this || _).size(value) === 1;
     }
 
   },
@@ -216,7 +262,8 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {T}
      */
     add: function add(target, value) {
-      var args = this(arguments)
+      var _ = (this || _),
+        args = this(arguments)
           .toArray()
           .slice(1)
           .compact()
@@ -225,31 +272,30 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
           return Array.prototype.concat.apply(ctx, args);
         },
         sum,
-        isBoolean = target === false || target === true,
-        self = this;
+        isBoolean = target === false || target === true;
 
-      if (this.isUndefined(target)) {
+      if (_.isUndefined(target)) {
         return;
       }
-      if (this.isString(target)) {
+      if (_.isString(target)) {
         target = target.split('');
         return concat(target, args).join('');
       }
-      if (this.isArray(target)) {
+      if (_.isArray(target)) {
         return concat(target, args);
       }
-      if (this.isFunction(target)) {
+      if (_.isFunction(target)) {
         return function adder() {
-          return add.apply(self, [target.apply(null, arguments)]
+          return add.apply(_, [target.apply(null, arguments)]
             .concat(args));
         };
       }
-      if (this.isObject(target)) {
-        return this.extend({}, concat(target, args));
+      if (_.isObject(target)) {
+        return _.extend({}, concat(target, args));
       }
-      sum = this.reduce(args, function (sum, num) {
-        return sum + (this.isNaN(parseInt(num, 10)) ? 0 : num);
-      }, target, this);
+      sum = _.reduce(args, function (sum, num) {
+        return sum + (_.isNaN(parseInt(num, 10)) ? 0 : num);
+      }, target, _);
       return isBoolean ? !!sum : sum;
     },
 
@@ -281,7 +327,7 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
        * }, '$');
      */
     transmogrify: function transmogrify(value, func, ignoreRx) {
-      var _ = this,
+      var _ = this || _,
 
         /**
          * Given a value and optional key, return true or false if the
@@ -356,7 +402,7 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {Iterable}
      */
     morph: function morph(value) {
-      return iterableApplicator.call(this, value, 'map', 'mapValues',
+      return iterableApplicator.call(this || _, value, 'map', 'mapValues',
         arguments);
     },
 
@@ -367,7 +413,7 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {Iterable}
      */
     sift: function sift(value) {
-      return iterableApplicator.call(this, value, 'filter', 'pick',
+      return iterableApplicator.call(this || _, value, 'filter', 'pick',
         arguments);
     },
 
@@ -383,10 +429,11 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {Iterable} The squirted `iterable`
      */
     squirt: function squirt(iterable, key, value) {
-      var mapper;
+      var mapper,
+        _ = this || _;
       mapper =
-        this.isObject(key) ? objectMapper(key) : keyValueMapper(key, value);
-      return this.each(iterable || [], mapper);
+        _.isObject(key) ? objectMapper(key) : keyValueMapper(key, value);
+      return _.each(iterable || [], mapper);
     },
 
     /**
@@ -395,12 +442,13 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
      * @returns {Iterable} Emptied value
      */
     empty: function empty(value) {
-      if (this.isObject(value)) {
-        if (this.isArray(value)) {
+      var _ = this || _;
+      if (_.isObject(value)) {
+        if (_.isArray(value)) {
           value.length = 0;
         }
         else {
-          this(value)
+          _(value)
             .keys()
             .each(function (key) {
               delete value[key];
@@ -408,41 +456,7 @@ var iterableApplicator = function iterableApplicator(value, arrayFn, objFn,
         }
       }
       return value;
-    },
-
-    /**
-     * Returns `true` if `value` is an object with its own function named
-     * `fnName`.
-     * @param {Object} [value] Can be anything, but to return `true` must be an
-     * object (`_.isObject()` would return `true`)
-     * @param {string} [fnName] Name of function.  If omitted, returns `false`.
-     * @returns boolean
-     */
-    hasFunction: function hasFunction(value, fnName) {
-      return this.containsFunction(value, fnName) && this.has(value, fnName);
-    },
-
-    /**
-     * Returns `true` if `value` is an object containing function named
-     * `fnName`. Will walk prototype tree.
-     * @param {Object} [value] Can be anything, but to return `true` must be an
-     * object (`_.isObject()` would return `true`)
-     * @param {string} [fnName] Name of function.  If omitted, returns `false`.
-     * @returns boolean
-     */
-    containsFunction: function containsFunction(value, fnName) {
-      return this.isObject(value) && this.isFunction(value[fnName]);
-    },
-
-    /**
-     * Returns `true` if the object has only one member.
-     * @param {*} [value] Value to inspect
-     * @returns boolean
-     */
-    isSingular: function isSingular(value) {
-      return this.size(value) === 1;
     }
-
   };
 
 _.mixin(_, nonChainableMixins, {
