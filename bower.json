@@ -1,7 +1,7 @@
 {
   "name": "lodash-decipher",
   "main": "dist/lodash-decipher.js",
-  "version": "0.3.4-2",
+  "version": "0.3.4-3",
   "authors": [
     "Christopher Hiller <chiller@decipherinc.com>"
   ],
