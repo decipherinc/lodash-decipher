@@ -14,7 +14,9 @@
 
 'use strict';
 
-var _ = (window._);
+var _ = (window._),
+  format = require('format');
+
 
 /**
  * A LoDash "collection"
@@ -149,54 +151,9 @@ var _iterableApplicator = function _iterableApplicator(value, arrayFn, objFn,
     },
 
     /**
-     * Formats a string value, sprintf-style, sort of.  Is pretty forgiving.
-     * Valid replacements:
-     *   - `%s`: String replacement
-     *   - `%d`: Integer replacement
-     *   - `%f`: Float replacement
-     *   - `%j`: JSON replacement
-     * @param {string} value String to format, which can contain any number
-     *     of the above replacement variables
-     * @param {...string} [params] Any parameters to your formatting string
-     * @returns {string}
+     * @see https://www.npmjs.com/package/format
      */
-    format: (function () {
-      var formatterRx = /(%[sdfj])/;
-      var replacers = {
-        '%s': function stringReplacer(value) {
-          return value.toString();
-        },
-        '%j': function jsonReplacer(value) {
-          return JSON.stringify(value);
-        },
-        '%d': function intReplacer(value) {
-          return parseInt(value, 10);
-        },
-        '%f': function floatReplacer(value) {
-          return parseFloat(value);
-        }
-      };
-      return function format(value, params) {
-        var _ = this || _;
-        if (_.isString(value)) {
-          _(arguments)
-            .toArray()
-            .slice(1)
-            .each(function (param) {
-              var match = value.match(formatterRx);
-              var replacer;
-              if (match) {
-                replacer = _.bind(replacers[match[0]], _, param);
-                try {
-                  value = value.replace(formatterRx, replacer);
-                } catch (ignored) {
-                }
-              }
-            }, _);
-        }
-        return value;
-      };
-    })(),
+    format: format,
 
     /**
      * Like {@link format format} but returns an `Error` instead of a `string`.
@@ -465,7 +422,7 @@ _.mixin(_, chainableMixins);
 
 module.exports = _;
 
-},{}],2:[function(require,module,exports){
+},{"format":3}],2:[function(require,module,exports){
 /**
  * ng-lodash-decipher: lodash-decipher + AngularJS goodies
  * @author Christopher Hiller <chiller@decipherinc.com>
@@ -695,4 +652,114 @@ decipherLodash.$inject = ['$injector'];
 angular.module('decipher.lodash', [])
   .run(decipherLodash);
 
-},{"./lodash-decipher":1}]},{},[2]);
+},{"./lodash-decipher":1}],3:[function(require,module,exports){
+//
+// format - printf-like string formatting for JavaScript
+// github.com/samsonjs/format
+// @_sjs
+//
+// Copyright 2010 - 2013 Sami Samhuri <sami@samhuri.net>
+//
+// MIT License
+// http://sjs.mit-license.org
+//
+
+;(function() {
+
+  //// Export the API
+  var namespace;
+
+  // CommonJS / Node module
+  if (typeof module !== 'undefined') {
+    namespace = module.exports = format;
+  }
+
+  // Browsers and other environments
+  else {
+    // Get the global object. Works in ES3, ES5, and ES5 strict mode.
+    namespace = (function(){ return this || (1,eval)('this') }());
+  }
+
+  namespace.format = format;
+  namespace.vsprintf = vsprintf;
+
+  if (typeof console !== 'undefined' && typeof console.log === 'function') {
+    namespace.printf = printf;
+  }
+
+  function printf(/* ... */) {
+    console.log(format.apply(null, arguments));
+  }
+
+  function vsprintf(fmt, replacements) {
+    return format.apply(null, [fmt].concat(replacements));
+  }
+
+  function format(fmt) {
+    var argIndex = 1 // skip initial format argument
+      , args = [].slice.call(arguments)
+      , i = 0
+      , n = fmt.length
+      , result = ''
+      , c
+      , escaped = false
+      , arg
+      , precision
+      , nextArg = function() { return args[argIndex++]; }
+      , slurpNumber = function() {
+          var digits = '';
+          while (fmt[i].match(/\d/))
+            digits += fmt[i++];
+          return digits.length > 0 ? parseInt(digits) : null;
+        }
+      ;
+    for (; i < n; ++i) {
+      c = fmt[i];
+      if (escaped) {
+        escaped = false;
+        precision = slurpNumber();
+        switch (c) {
+        case 'b': // number in binary
+          result += parseInt(nextArg(), 10).toString(2);
+          break;
+        case 'c': // character
+          arg = nextArg();
+          if (typeof arg === 'string' || arg instanceof String)
+            result += arg;
+          else
+            result += String.fromCharCode(parseInt(arg, 10));
+          break;
+        case 'd': // number in decimal
+          result += parseInt(nextArg(), 10);
+          break;
+        case 'f': // floating point number
+          result += parseFloat(nextArg()).toFixed(precision || 6);
+          break;
+        case 'o': // number in octal
+          result += '0' + parseInt(nextArg(), 10).toString(8);
+          break;
+        case 's': // string
+          result += nextArg();
+          break;
+        case 'x': // lowercase hexadecimal
+          result += '0x' + parseInt(nextArg(), 10).toString(16);
+          break;
+        case 'X': // uppercase hexadecimal
+          result += '0x' + parseInt(nextArg(), 10).toString(16).toUpperCase();
+          break;
+        default:
+          result += c;
+          break;
+        }
+      } else if (c === '%') {
+        escaped = true;
+      } else {
+        result += c;
+      }
+    }
+    return result;
+  }
+
+}());
+
+},{}]},{},[2]);

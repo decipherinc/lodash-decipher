@@ -309,20 +309,7 @@ Returns `true` if the value is not `undefined`.
 
 #### _.format(value, [params]) 
 
-Formats a string value, `sprintf`-style, sort of.  Is pretty forgiving.  Does not currently support things like decimal places and padding.  Valid replacements:
-
-  - `%s`: String replacement
-  - `%d`: Integer replacement
-  - `%f`: Float replacement
-  - `%j`: JSON replacement
-
-**Parameters**
-
-**value**: `string`, String to format, which can contain any number of the above replacement variables
-
-**params**: `[string]`, Any parameters to your formatting string
-
-**Returns**: `string`, Formatted string
+See package [format](https://www.npmjs.com/package/format).
 
 #### _.noop() 
 
